@@ -70,7 +70,7 @@ public class Main {
             for (int i = 0; i < 10_000; i++) {
                 try {
                     String nextLine = line.take();
-                    if (countWord(max, word) < countWord(line.take(), word)) {
+                    if (countWord(max, word) < countWord(nextLine, word)) {
                         max = nextLine;
                         count = countWord(max, word);
                     }
