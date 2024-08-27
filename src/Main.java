@@ -7,7 +7,7 @@ public class Main {
     public static BlockingQueue<String> sumB = new ArrayBlockingQueue<>(100);
     public static BlockingQueue<String> sumC = new ArrayBlockingQueue<>(100);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         Runnable logic = (() -> {
             for (int i = 0; i < 10_000; i++) {
                 try {
@@ -24,55 +24,13 @@ public class Main {
         threadMain.start();
 
         Runnable logicA = (() -> {
-            String maxA = String.valueOf(0);
-            int countA = 0;
-            for (int i = 0; i < 10_000; i++) {
-                try {
-                    int countOld = countWord(maxA, 'a');
-                    String newA = sumA.take();
-                    if (countOld < countWord(newA, 'a')) {
-                        maxA = newA;
-                        countA = countWord(maxA, 'a');
-                    }
-                } catch (InterruptedException e) {
-                    return;
-                }
-            }
-            System.out.println(countA);
+            finder('a', sumA);
         });
         Runnable logicB = (() -> {
-            String maxB = String.valueOf(0);
-            int countB = 0;
-            for (int i = 0; i < 10_000; i++) {
-                try {
-                    int countOld = countWord(maxB, 'b');
-                    String newB = sumB.take();
-                    if (countOld < countWord(newB, 'b')) {
-                        maxB = newB;
-                        countB = countWord(maxB, 'b');
-                    }
-                } catch (InterruptedException e) {
-                    return;
-                }
-            }
-            System.out.println(countB);
+            finder('b', sumB);
         });
         Runnable logicC = (() -> {
-            String maxC = String.valueOf(0);
-            int countC = 0;
-            for (int i = 0; i < 10_000; i++) {
-                try {
-                    int countOld = countWord(maxC, 'c');
-                    String newC = sumC.take();
-                    if (countOld < countWord(newC, 'c')) {
-                        maxC = newC;
-                        countC = countWord(maxC, 'c');
-                    }
-                } catch (InterruptedException e) {
-                    return;
-                }
-            }
-            System.out.println(countC);
+            finder('c', sumC);
         });
         Thread threadA = new Thread(logicA);
         Thread threadB = new Thread(logicB);
@@ -81,6 +39,11 @@ public class Main {
         threadA.start();
         threadB.start();
         threadC.start();
+
+        threadA.join();
+        threadB.join();
+        threadC.join();
+        
     }
 
     public static String generateText(String letters, int length) {
@@ -100,5 +63,21 @@ public class Main {
             }
         }
         return sum;
+    }
+    public static void finder(char word, BlockingQueue<String> line) {
+            String max = String.valueOf(0);
+            int count = 0;
+            for (int i = 0; i < 10_000; i++) {
+                try {
+                    String nextLine = line.take();
+                    if (countWord(max, word) < countWord(line.take(), word)) {
+                        max = nextLine;
+                        count = countWord(max, word);
+                    }
+                } catch (InterruptedException e) {
+                    return;
+                }
+            }
+            System.out.println(count);
     }
 }
